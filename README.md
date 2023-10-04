@@ -9,7 +9,7 @@ To view already working example go to this [website](https://typeahead-2r4shlgaq
 Name | Type | Default | Description
 -----|------|---------|------------
 delay | number | `300` | Delay, in milliseconds, before search is executed.
-isLoading `required` | boolean | | Value that presents if async operation is in progress.
+isLoading `required` | boolean | false | Value that presents if async operation is in progress.
 onSearch `required` | function | | Callback to perform when the search is executed. You handle you async logic here.
-placeholder | string | `'Type to search...'` | Placeholder for input.
-renderListItem | React.JSX.Element | <></> | Children to pass in order to render suggestion list you get from yor API.
+placeholder | string | '' | Placeholder for input.
+renderListItem | React.JSX.Element |  | Children to pass in order to render suggestion list you get from yor API.
