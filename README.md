@@ -12,4 +12,4 @@ delay | number | `300` | Delay, in milliseconds, before search is executed.
 isLoading `required` | boolean | false | Value that presents if async operation is in progress.
 onSearch `required` | function | | Callback to perform when the search is executed. You handle you async logic here.
 placeholder | string | '' | Placeholder for input.
-renderListItem | React.JSX.Element |  | Children to pass in order to render suggestion list you get from yor API.
+renderListItem `required` | React.JSX.Element |  | Children to pass in order to render suggestion list you get from yor API.
