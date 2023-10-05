@@ -17,3 +17,10 @@ labelKey       `required` | string            | '' | A string used for filtering
 onSelectItem              | function          |    | Do something once you select option from typeahead component.
 onDeleteItem              | function          |    | Do something once you delete option from typeahead component.
 mulitple                  | boolean           |  false | Boolean that opens possibility to select mulitple options from typeahead component.
+
+### Improvements to be made
+- Make component support multiple data types.
+- Improve accessibility an responsivness.
+- Make it more modular, also not just async.
+- Change caching approach and add caching to be optional.
+- Add error handling.
