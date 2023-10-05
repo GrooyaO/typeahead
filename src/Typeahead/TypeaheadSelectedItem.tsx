@@ -20,7 +20,7 @@ const TypeaheadSelectedItem: React.FC<TypeaheadSelectedItemProps> = ({
   removeSelectedOption,
 }) => {
   return (
-    <CustomButton key={name} onClick={() => removeSelectedOption(name)}>
+    <CustomButton onClick={() => removeSelectedOption(name)}>
       <span>{name}</span>
       <span>&times;</span>
     </CustomButton>

@@ -1,5 +1,6 @@
 export type TypeaheadProps<T> = {
-  onSelect: (option: any[]) => void
+  onSelectItem?: (option: any[]) => void
+  onDeleteItem?: (option: any[]) => void
   labelKey: string
   multiple?: boolean
   placeholder?: string

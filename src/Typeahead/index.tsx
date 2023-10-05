@@ -21,15 +21,12 @@ const CustomInput = styled('div')({
   borderRadius: '4px',
 })
 
-type OptionType = {
-  [key: string]: any
-  labelKey: string // or the actual type of `labelKey`
-}
 const Typeahead = <T,>({
   multiple = false,
   placeholder = '',
   delay = 300,
-  onSelect,
+  onSelectItem,
+  onDeleteItem,
   onSearch,
   labelKey,
   isLoading = false,
@@ -88,6 +85,7 @@ const Typeahead = <T,>({
       }
     })
     setSelectedOptions(arr)
+    onDeleteItem && onDeleteItem(arr)
   }
 
   const handleOptionClick = useCallback(
@@ -104,9 +102,9 @@ const Typeahead = <T,>({
       }
 
       setSelectedOptions(nextSelectedOptions)
-      onSelect(nextSelectedOptions)
+      onSelectItem && onSelectItem(nextSelectedOptions)
     },
-    [multiple, labelKey, selectedOptions, onSelect],
+    [multiple, labelKey, selectedOptions, onSelectItem],
   )
 
   useEffect(() => {
@@ -134,9 +132,9 @@ const Typeahead = <T,>({
   return (
     <Wrapper>
       <CustomInput>
-        {selectedOptions.map(option => (
+        {selectedOptions.map((option, idx) => (
           <TypeaheadSelectedItem
-            key={option}
+            key={idx}
             name={option}
             removeSelectedOption={() => handleRemoveOption(option)}
           />
@@ -150,7 +148,10 @@ const Typeahead = <T,>({
       </CustomInput>
       {isLoading && <div>Loading...</div>}
       {inputValue.length > 0 && (
-        <TypeaheadDropdown showDropdown={showDropdown}>
+        <TypeaheadDropdown
+          showDropdown={showDropdown}
+          resultsFound={filteredOptions.length > 0}
+        >
           {filteredOptions.map((option, index: number) => (
             <TypeaheadOption
               key={option.id ? option.id : index}

@@ -4,6 +4,7 @@ import React from 'react'
 interface TypeaheadDropdownProps {
   showDropdown: boolean
   children: React.ReactNode
+  resultsFound: boolean
 }
 const CustomList = styled('div')({
   listStyle: 'none',
@@ -24,16 +25,13 @@ const CustomPaper = styled('div')({
 const TypeaheadDropdown: React.FC<TypeaheadDropdownProps> = ({
   showDropdown,
   children,
+  resultsFound,
 }) => {
   return showDropdown ? (
     <CustomPaper>
-      <CustomList>{children}</CustomList>
+      <CustomList>{resultsFound ? children : <p>No results</p>}</CustomList>
     </CustomPaper>
-  ) : (
-    <div>
-      <p>No results</p>
-    </div>
-  )
+  ) : null
 }
 
 export default TypeaheadDropdown
