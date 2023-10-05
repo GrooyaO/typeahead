@@ -24,3 +24,5 @@ mulitple                  | boolean           |  false | Boolean that opens poss
 - Make it more modular, also not just async.
 - Change caching approach and add caching to be optional.
 - Add error handling.
+- Split state to its respecive components.
+- If it gets more complex introduce context for prop delegation.
