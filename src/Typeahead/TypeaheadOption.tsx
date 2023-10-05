@@ -1,5 +1,5 @@
 import {styled} from '@mui/system'
-import {ReactNode} from 'react'
+import {ReactNode, forwardRef} from 'react'
 
 type OptionType = Record<string | number, unknown>
 
@@ -9,6 +9,7 @@ interface TypeaheadOptionProps {
   onClick: (option: OptionType) => void
   isHighlighted: boolean
 }
+
 const CustomListItem = styled('a')({
   display: 'block',
   width: '100%',
@@ -20,20 +21,18 @@ const CustomListItem = styled('a')({
   },
 })
 
-const TypeaheadOption: React.FC<TypeaheadOptionProps> = ({
-  option,
-  renderListItem,
-  onClick,
-  isHighlighted,
-}) => {
-  return (
-    <CustomListItem
-      style={isHighlighted ? {backgroundColor: '#eee'} : {}}
-      onClick={() => onClick(option)}
-    >
-      {renderListItem(option)}
-    </CustomListItem>
-  )
-}
+const TypeaheadOption = forwardRef<HTMLAnchorElement, TypeaheadOptionProps>(
+  ({option, renderListItem, onClick, isHighlighted}, ref) => {
+    return (
+      <CustomListItem
+        ref={ref}
+        style={isHighlighted ? {backgroundColor: '#eee'} : {}}
+        onClick={() => onClick(option)}
+      >
+        {renderListItem(option)}
+      </CustomListItem>
+    )
+  },
+)
 
 export default TypeaheadOption

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useEffect, useCallback, useRef} from 'react'
 import {styled} from '@mui/system'
 import debounce from 'lodash.debounce'
 import {TypeaheadProps, Cache} from '../types'
@@ -38,7 +38,7 @@ const Typeahead = <T,>({
   const [cache, setCache] = useState<Cache>({})
   const [activeIndex, setActiveIndex] = React.useState(0)
   const [showDropdown, setShowDropdown] = React.useState(false)
-
+  const optionRefs = useRef<(HTMLElement | null)[]>([])
   const handleSearch = useCallback(
     debounce(async (query: string) => {
       if (!query) {
@@ -111,14 +111,28 @@ const Typeahead = <T,>({
     handleSearch(inputValue)
   }, [inputValue, handleSearch])
 
+  useEffect(() => {
+    optionRefs.current = optionRefs.current.slice(0, filteredOptions.length)
+  }, [filteredOptions])
+
+  useEffect(() => {
+    optionRefs.current[activeIndex]?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'start',
+    })
+  }, [activeIndex])
+
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setActiveIndex((activeIndex + 1) % filteredOptions.length)
+      setActiveIndex(prevActiveIndex =>
+        prevActiveIndex === filteredOptions.length - 1
+          ? filteredOptions.length - 1
+          : prevActiveIndex + 1,
+      )
     } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setActiveIndex(
-        (activeIndex - 1 + filteredOptions.length) % filteredOptions.length,
+      setActiveIndex(prevActiveIndex =>
+        prevActiveIndex === 0 ? 0 : prevActiveIndex - 1,
       )
     } else if (e.key === 'Enter' && filteredOptions.length > 0) {
       e.preventDefault()
@@ -154,6 +168,7 @@ const Typeahead = <T,>({
         >
           {filteredOptions.map((option, index: number) => (
             <TypeaheadOption
+              ref={element => (optionRefs.current[index] = element)}
               key={option.id ? option.id : index}
               onClick={() => handleOptionClick(option)}
               renderListItem={option => renderListItem(option)}
