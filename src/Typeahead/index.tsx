@@ -1,27 +1,14 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {styled} from '@mui/system'
 import debounce from 'lodash.debounce'
-import {TypeaheadProps, TypeaheadOption, Cache, Option} from '../types'
-import CustomListItem from './CustomListItem'
+import {TypeaheadProps, Cache} from '../types'
+import TypeaheadOption from './TypeaheadOption'
+import TypeaheadSelectedItem from './TypeaheadSelectedItem'
+import TypeaheadInput from './TypeaheadInput'
+import TypeaheadDropdown from './TypeaheadDropdown'
 
 const Wrapper = styled('div')({
   position: 'relative',
-})
-
-const CustomPaper = styled('div')({
-  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-  borderRadius: '4px',
-  position: 'absolute',
-  zIndex: 1,
-  width: '100%',
-  maxHeight: '300px',
-  overflow: 'auto',
-})
-
-const CustomList = styled('ul')({
-  listStyle: 'none',
-  padding: 0,
-  margin: 0,
 })
 
 const CustomInput = styled('div')({
@@ -34,38 +21,29 @@ const CustomInput = styled('div')({
   borderRadius: '4px',
 })
 
-const CustomButton = styled('button')({
-  background: '#f0f0f0',
-  border: 'none',
-  borderRadius: '4px',
-  padding: '5px 10px',
-  margin: '0 5px',
-  cursor: 'pointer',
-})
-
+type OptionType = {
+  [key: string]: any
+  labelKey: string // or the actual type of `labelKey`
+}
 const Typeahead = <T,>({
   multiple = false,
   placeholder = '',
   delay = 300,
+  onSelect,
   onSearch,
+  labelKey,
   isLoading = false,
   renderListItem,
 }: TypeaheadProps<T>) => {
-  //input value
   const [inputValue, setInputValue] = useState('')
-  //selected suggestions
   const [selectedOptions, setSelectedOptions] = useState<string[]>([])
-  //make suggestions m
   const [suggestions, setSuggestions] = useState<any[]>([])
-  //cached suggestions... or query?
   const [cache, setCache] = useState<Cache>({})
+  const [activeIndex, setActiveIndex] = React.useState(0)
+  const [showDropdown, setShowDropdown] = React.useState(false)
 
-  //do not rerun if value is same
-  //debounce for 300ms
-  //early quitting
-  //caching
   const handleSearch = useCallback(
-    debounce((query: string) => {
+    debounce(async (query: string) => {
       if (!query) {
         return
       }
@@ -73,74 +51,116 @@ const Typeahead = <T,>({
         // Use cached data if available
         setSuggestions(cache[query])
       } else {
-        onSearch(query).then((results: any[]) => {
-          const newCache = {...cache, [query]: results}
-          setCache(newCache)
+        try {
+          const results: any[] = await onSearch(query)
+          if (results === undefined) {
+            console.error('No results retrieved')
+            return
+          }
+
+          setCache(prevCache => ({...prevCache, [query]: results}))
           setSuggestions(results)
-        })
+          setShowDropdown(results.length > 0 && query !== '')
+        } catch (error) {
+          console.error('Failed to search:', error)
+        }
       }
     }, delay),
-    [onSearch, cache, delay],
+    [onSearch, setCache, setSuggestions, delay],
   )
-  //rerender when inputValue changes... possibility of using useRef for no rerender and then manually forcing rerenders
-  useEffect(() => {
-    handleSearch(inputValue)
-  }, [inputValue])
+  const filteredOptions =
+    suggestions?.length > 0
+      ? suggestions.filter(
+          option => !selectedOptions.includes(option[labelKey]),
+        )
+      : []
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value)
   }
 
-  const handleOptionClick = (option: TypeaheadOption) => {
-    if (multiple) {
-      setSelectedOptions([...selectedOptions, option.name])
-    } else {
-      setSelectedOptions([option.name])
-      setInputValue('')
-      setSuggestions([])
+  const handleRemoveOption = (optionToRemove: any) => {
+    const arr = selectedOptions.filter(option => {
+      if (typeof option === 'string') {
+        return option !== optionToRemove
+      } else {
+        return option[labelKey] !== optionToRemove[labelKey]
+      }
+    })
+    setSelectedOptions(arr)
+  }
+
+  const handleOptionClick = useCallback(
+    (option: any) => {
+      const value = option[labelKey]
+      let nextSelectedOptions
+
+      if (multiple) {
+        nextSelectedOptions = [...selectedOptions, value]
+      } else {
+        nextSelectedOptions = [value]
+        setInputValue('')
+        setSuggestions([])
+      }
+
+      setSelectedOptions(nextSelectedOptions)
+      onSelect(nextSelectedOptions)
+    },
+    [multiple, labelKey, selectedOptions, onSelect],
+  )
+
+  useEffect(() => {
+    handleSearch(inputValue)
+  }, [inputValue, handleSearch])
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIndex((activeIndex + 1) % filteredOptions.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIndex(
+        (activeIndex - 1 + filteredOptions.length) % filteredOptions.length,
+      )
+    } else if (e.key === 'Enter' && filteredOptions.length > 0) {
+      e.preventDefault()
+      handleOptionClick(filteredOptions[activeIndex])
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setShowDropdown(false)
     }
   }
-  //remove on option click
-  const handleRemoveOption = (option: string) => {
-    setSelectedOptions(selectedOptions.filter(o => o !== option))
-  }
-  //filter options based on
-  const filteredOptions =
-    suggestions.length > 0
-      ? suggestions.filter(option => !selectedOptions.includes(option.name))
-      : []
 
   return (
     <Wrapper>
       <CustomInput>
         {selectedOptions.map(option => (
-          <CustomButton key={option} onClick={() => handleRemoveOption(option)}>
-            {option} &times;
-          </CustomButton>
+          <TypeaheadSelectedItem
+            key={option}
+            name={option}
+            removeSelectedOption={() => handleRemoveOption(option)}
+          />
         ))}
-        <input
+        <TypeaheadInput
           value={inputValue}
           onChange={handleInputChange}
           placeholder={placeholder}
-          style={{flex: 1, border: 'none', outline: 'none'}}
+          onKeyDown={onKeyDown}
         />
       </CustomInput>
       {isLoading && <div>Loading...</div>}
-      {inputValue.length > 0 ? (
-        <CustomPaper>
-          <CustomList>
-            {filteredOptions.map((option: any, index: number) => (
-              <CustomListItem
-                key={index}
-                onClick={() => handleOptionClick(option)}
-              >
-                {renderListItem(option)}
-              </CustomListItem>
-            ))}
-          </CustomList>
-        </CustomPaper>
-      ) : (
-        <p>No results....</p>
+      {inputValue.length > 0 && (
+        <TypeaheadDropdown showDropdown={showDropdown}>
+          {filteredOptions.map((option, index: number) => (
+            <TypeaheadOption
+              key={option.id ? option.id : index}
+              onClick={() => handleOptionClick(option)}
+              renderListItem={option => renderListItem(option)}
+              option={option}
+              isHighlighted={activeIndex === index}
+            />
+          ))}
+        </TypeaheadDropdown>
       )}
     </Wrapper>
   )
