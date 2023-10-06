@@ -14,3 +14,15 @@ onSearch `required` | function | | Callback to perform when the search is execut
 placeholder | string | '' | Placeholder for input.
 renderListItem `required` | React.JSX.Element |  | A function that takes an option and returns a React node that represents the option in the suggestion list.
 labelKey       `required` | string            | '' | A string used for filtering of selected options.    
+onSelectItem              | function          |    | Do something once you select option from typeahead component.
+onDeleteItem              | function          |    | Do something once you delete option from typeahead component.
+mulitple                  | boolean           |  false | Boolean that opens possibility to select mulitple options from typeahead component.
+
+### Improvements to be made
+- Make component support multiple data types.
+- Improve accessibility an responsivness.
+- Make it more modular, also not just async.
+- Change caching approach and add caching to be optional.
+- Add error handling.
+- Split state to its respecive components.
+- If it gets more complex introduce context for prop delegation.
