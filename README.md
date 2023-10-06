@@ -21,7 +21,7 @@ mulitple                  | boolean           |  false | Boolean that opens poss
 ### Improvements to be made
 - Make component support multiple data types.
 - Improve accessibility an responsivness.
-- Make it more modular, also not just async.
+- Make it more modular, not just async.
 - Change caching approach and add caching to be optional.
 - Add error handling.
 - Split state to its respecive components.
