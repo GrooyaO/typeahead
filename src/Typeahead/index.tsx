@@ -63,7 +63,7 @@ const Typeahead = <T,>({
         }
       }
     }, delay),
-    [onSearch, setCache, setSuggestions, delay],
+    [onSearch, delay],
   )
   const filteredOptions =
     suggestions?.length > 0
@@ -85,7 +85,7 @@ const Typeahead = <T,>({
       }
     })
     setSelectedOptions(arr)
-    onDeleteItem && onDeleteItem(arr)
+    if (onDeleteItem) onDeleteItem(arr)
   }
 
   const handleOptionClick = useCallback(
@@ -102,7 +102,7 @@ const Typeahead = <T,>({
       }
 
       setSelectedOptions(nextSelectedOptions)
-      onSelectItem && onSelectItem(nextSelectedOptions)
+      if (onSelectItem) onSelectItem(nextSelectedOptions)
     },
     [multiple, labelKey, selectedOptions, onSelectItem],
   )
