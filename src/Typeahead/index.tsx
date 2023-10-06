@@ -32,15 +32,19 @@ const Typeahead = <T,>({
   isLoading = false,
   renderListItem,
 }: TypeaheadProps<T>) => {
+  // Declare state variables and their setter functions
   const [inputValue, setInputValue] = useState('')
   const [selectedOptions, setSelectedOptions] = useState<string[]>([])
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [cache, setCache] = useState<Cache>({})
   const [activeIndex, setActiveIndex] = React.useState(0)
   const [showDropdown, setShowDropdown] = React.useState(false)
+  // Reference to currently selected option
   const optionRefs = useRef<(HTMLElement | null)[]>([])
+  // Perform search when input changes, using debounce to limit frequency
   const handleSearch = useCallback(
     debounce(async (query: string) => {
+      // Return if there's no query
       if (!query) {
         return
       }
@@ -49,12 +53,13 @@ const Typeahead = <T,>({
         setSuggestions(cache[query])
       } else {
         try {
+          // Perform the search
           const results: any[] = await onSearch(query)
           if (results === undefined) {
             console.error('No results retrieved')
             return
           }
-
+          // Update cache and suggestions
           setCache(prevCache => ({...prevCache, [query]: results}))
           setSuggestions(results)
           setShowDropdown(results.length > 0 && query !== '')
@@ -65,17 +70,18 @@ const Typeahead = <T,>({
     }, delay),
     [onSearch, delay],
   )
+  // Filter out already selected options from suggestions
   const filteredOptions =
     suggestions?.length > 0
       ? suggestions.filter(
           option => !selectedOptions.includes(option[labelKey]),
         )
       : []
-
+  // Handle input changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value)
   }
-
+  // Remove an option from selection
   const handleRemoveOption = (optionToRemove: any) => {
     const arr = selectedOptions.filter(option => {
       if (typeof option === 'string') {
@@ -87,12 +93,12 @@ const Typeahead = <T,>({
     setSelectedOptions(arr)
     if (onDeleteItem) onDeleteItem(arr)
   }
-
+  // Handle option selection
   const handleOptionClick = useCallback(
     (option: any) => {
       const value = option[labelKey]
       let nextSelectedOptions
-
+      // Add/replace selected options
       if (multiple) {
         nextSelectedOptions = [...selectedOptions, value]
       } else {
@@ -106,15 +112,15 @@ const Typeahead = <T,>({
     },
     [multiple, labelKey, selectedOptions, onSelectItem],
   )
-
+  // Perform search each time input value changes
   useEffect(() => {
     handleSearch(inputValue)
   }, [inputValue, handleSearch])
-
+  // Update references list when options change
   useEffect(() => {
     optionRefs.current = optionRefs.current.slice(0, filteredOptions.length)
   }, [filteredOptions])
-
+  // Scroll into view when active index changes
   useEffect(() => {
     optionRefs.current[activeIndex]?.scrollIntoView({
       behavior: 'smooth',
@@ -122,7 +128,7 @@ const Typeahead = <T,>({
       inline: 'start',
     })
   }, [activeIndex])
-
+  // Handle keyboard events on the input
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'ArrowDown') {
       setActiveIndex(prevActiveIndex =>
