@@ -26,3 +26,4 @@ mulitple                  | boolean           |  false | Boolean that opens poss
 - Add error handling.
 - Split state to its respecive components.
 - If it gets more complex introduce context for prop delegation.
+- Add more tests. Create tests for all components.
